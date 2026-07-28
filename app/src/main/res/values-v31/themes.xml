@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Ardab" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.SplashScreen" parent="Theme.Ardab">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/logo_vector</item>
+        <item name="android:windowSplashScreenBackground">#ffffff</item>
+        <item name="postSplashScreenTheme">@style/Theme.Ardab</item>
+    </style>
+</resources>
