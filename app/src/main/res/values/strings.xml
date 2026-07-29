@@ -1,4 +1,5 @@
 <resources>
+    <!-- Existing strings (keep them) -->
     <string name="app_name">Ardab</string>
     <string name="profile_title">Profile</string>
     <string name="language_setting">Arabic Language (عربي)</string>
@@ -17,4 +18,56 @@
     <string name="app_settings">App Settings</string>
     <string name="appearance">Appearance</string>
     <string name="language_description">Choose your preferred language</string>
+
+    <!-- New strings for Add Transaction bottom sheet -->
+    <string name="add_transaction">Add Transaction</string>
+    <string name="date_label">Date (YYYY-MM-DD)</string>
+    <string name="transaction_type">Transaction Type</string>
+    <string name="payment_method">Payment Method</string>
+    <string name="description">Description</string>
+    <string name="amount">Amount</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+
+    <string name="close">Close</string>
+    <string name="pick_date">Pick date</string>
+    <string name="clear">Clear</string>
+    <string name="enter_valid_amount">Enter a valid amount</string>
+
+
+    <!-- Transaction Types -->
+    <string name="transaction_type_income">Income</string>
+    <string name="transaction_type_expense">Expense</string>
+    <string name="transaction_type_bill">Bill</string>
+    <string name="transaction_type_payroll">Payroll</string>
+    <string name="transaction_type_loan">Loan</string>
+    <string name="transaction_type_transfer">Transfer</string>
+
+    <!-- Payment Methods -->
+    <string name="payment_method_cash">Cash</string>
+    <string name="payment_method_bank">Bank</string>
+    <string name="payment_method_credit">Credit</string>
+
+
+    <!-- Dashboard screen -->
+    <string name="add_project">Add Project</string>
+    <string name="project_name">Project Name</string>
+    <string name="create">Create</string>
+    <string name="no_projects">No projects yet</string>
+    <string name="no_projects_sub">Start by creating your first project</string>
+    <string name="create_first_project">Create your first project</string>
+    <string name="projects">Projects</string>
+    <string name="total_cash">Total Cash</string>
+    <string name="total_bank">Total Bank</string>
+    <string name="total_balance">Total Balance: $%.2f</string>
+
+    <!-- Dashboard additional strings -->
+    <string name="portfolio_overview">Portfolio Overview</string>
+    <string name="create_new_project">Create New Project</string>
+    <string name="add">Add</string>
+    <string name="active_projects">Active Projects (%d)</string>
+    <string name="created_at">Created: %s</string>
+    <string name="cash_label">Cash: $%.2f</string>
+    <string name="bank_label">Bank: $%.2f</string>
+
 </resources>

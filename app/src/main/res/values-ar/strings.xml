@@ -1,13 +1,14 @@
 <resources>
+    <!-- App & Navigation -->
     <string name="app_name">أردب</string>
     <string name="profile_title">الملف الشخصي</string>
     <string name="language_setting">اللغة العربية</string>
-
     <string name="dashboard">الرئيسية</string>
     <string name="reports">التقارير</string>
     <string name="profile">الحساب</string>
     <string name="messages">الرسائل</string>
 
+    <!-- Language Settings -->
     <string name="language">اللغة</string>
     <string name="follow_system">لغة الجهاز</string>
     <string name="english">English</string>
@@ -17,4 +18,52 @@
     <string name="app_settings">إعدادات التطبيق</string>
     <string name="appearance">المظهر</string>
     <string name="language_description">اختر لغة التطبيق</string>
+
+    <!-- Add Transaction Bottom Sheet -->
+    <string name="add_transaction">إضافة معاملة</string>
+    <string name="date_label">التاريخ (YYYY-MM-DD)</string>
+    <string name="transaction_type">نوع المعاملة</string>
+    <string name="payment_method">طريقة الدفع</string>
+    <string name="description">الوصف</string>
+    <string name="amount">المبلغ</string>
+    <string name="cancel">إلغاء</string>
+    <string name="save">حفظ</string>
+    <string name="close">إغلاق</string>
+    <string name="pick_date">اختر التاريخ</string>
+    <string name="clear">مسح</string>
+    <string name="enter_valid_amount">أدخل مبلغاً صحيحاً</string>
+
+    <!-- Transaction Types -->
+    <string name="transaction_type_income">دخل</string>
+    <string name="transaction_type_expense">مصروف</string>
+    <string name="transaction_type_bill">فاتورة</string>
+    <string name="transaction_type_payroll">رواتب</string>
+    <string name="transaction_type_loan">قرض</string>
+    <string name="transaction_type_transfer">تحويل</string>
+
+    <!-- Payment Methods -->
+    <string name="payment_method_cash">نقدي</string>
+    <string name="payment_method_bank">بنك</string>
+    <string name="payment_method_credit">ائتمان</string>
+
+    <!-- Dashboard -->
+    <string name="add_project">إضافة مشروع</string>
+    <string name="project_name">اسم المشروع</string>
+    <string name="create">إنشاء</string>
+    <string name="no_projects">لا توجد مشاريع بعد</string>
+    <string name="no_projects_sub">ابدأ بإنشاء مشروعك الأول</string>
+    <string name="create_first_project">أنشئ مشروعك الأول</string>
+    <string name="projects">المشاريع</string>
+    <string name="total_cash">إجمالي النقدي</string>
+    <string name="total_bank">إجمالي البنك</string>
+    <string name="total_balance">إجمالي الرصيد: $%.2f</string>
+
+    <string name="portfolio_overview">نظرة عامة على المحفظة</string>
+    <string name="create_new_project">إنشاء مشروع جديد</string>
+    <string name="add">إضافة</string>
+    <string name="active_projects">المشاريع النشطة (%d)</string>
+    <string name="created_at">تم الإنشاء: %s</string>
+    <string name="cash_label">النقدي: $%.2f</string>
+    <string name="bank_label">البنك: $%.2f</string>
+
 </resources>
