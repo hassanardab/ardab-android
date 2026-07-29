@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.mamo15.ardab.ui.navigation.Screen
 import com.mamo15.ardab.ui.screens.DashboardScreen
 import com.mamo15.ardab.ui.screens.MessagesScreen
@@ -37,8 +38,15 @@ fun MainScreen() {
             NavigationBar {
                 items.forEach { screen ->
                     NavigationBarItem(
-                        icon = { Icon(screen.icon, contentDescription = screen.title) },
-                        label = { Text(screen.title) },
+                        icon = {
+                            Icon(
+                                imageVector = screen.icon,
+                                contentDescription = stringResource(screen.titleRes)
+                            )
+                        },
+                        label = {
+                            Text(stringResource(screen.titleRes))
+                        },
                         selected = selectedRoute == screen.route,
                         onClick = {
                             selectedRoute = screen.route

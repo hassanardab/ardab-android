@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">أردب</string>
+    <string name="profile_title">الملف الشخصي</string>
+    <string name="language_setting">اللغة العربية</string>
+
+    <string name="dashboard">الرئيسية</string>
+    <string name="reports">التقارير</string>
+    <string name="profile">الحساب</string>
+    <string name="messages">الرسائل</string>
+
+    <string name="language">اللغة</string>
+    <string name="follow_system">لغة الجهاز</string>
+    <string name="english">English</string>
+    <string name="arabic">العربية</string>
+    <string name="russian">Русский</string>
+
+    <string name="app_settings">إعدادات التطبيق</string>
+    <string name="appearance">المظهر</string>
+    <string name="language_description">اختر لغة التطبيق</string>
+</resources>

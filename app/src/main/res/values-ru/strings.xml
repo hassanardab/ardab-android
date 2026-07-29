@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ардаб</string>
+    <string name="profile_title">Профиль</string>
+    <string name="language_setting">Русский язык</string>
+
+    <string name="dashboard">Главная</string>
+    <string name="reports">Отчеты</string>
+    <string name="profile">Профиль</string>
+    <string name="messages">Сообщения</string>
+
+    <string name="language">Язык</string>
+    <string name="follow_system">Системный</string>
+    <string name="english">English</string>
+    <string name="arabic">العربية</string>
+    <string name="russian">Русский</string>
+
+    <string name="app_settings">Настройки приложения</string>
+    <string name="appearance">Внешний вид</string>
+    <string name="language_description">Выберите предпочитаемый язык</string>
+</resources>

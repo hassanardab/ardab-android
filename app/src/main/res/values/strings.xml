@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">Ardab</string>
+    <string name="profile_title">Profile</string>
+    <string name="language_setting">Arabic Language (عربي)</string>
+
+    <string name="dashboard">Dashboard</string>
+    <string name="reports">Reports</string>
+    <string name="profile">Profile</string>
+    <string name="messages">Messages</string>
+
+    <string name="language">Language</string>
+    <string name="follow_system">Follow System</string>
+    <string name="english">English</string>
+    <string name="arabic">العربية</string>
+    <string name="russian">Русский</string>
+
+    <string name="app_settings">App Settings</string>
+    <string name="appearance">Appearance</string>
+    <string name="language_description">Choose your preferred language</string>
 </resources>
