@@ -31,6 +31,7 @@
     <string name="save">Сохранить</string>
     <string name="close">Закрыть</string>
     <string name="pick_date">Выбрать дату</string>
+    <string name="transaction_type_loan_repayment">Loan Repayment</string>
     <string name="clear">Очистить</string>
     <string name="enter_valid_amount">Введите корректную сумму</string>
 
@@ -67,4 +68,18 @@
     <string name="created_at">Создан: %s</string>
     <string name="cash_label">Наличные: $%.2f</string>
     <string name="bank_label">Банк: $%.2f</string>
+
+    <!-- Reports Screen -->
+    <string name="reports_title">Отчеты</string>
+    <string name="report_type_financial">Финансовый</string>
+    <string name="report_type_employee">Сотрудники</string>
+    <string name="report_type_vendor">Поставщики</string>
+    <string name="reports_items_count">%d элементов</string>
+    <string name="reports_empty_title">Элементы %s не найдены</string>
+    <string name="generate">Создать</string>
+    <string name="generate_all">Создать все</string>
+    <string name="filter">Фильтр</string>
+
+    <string name="chat_detail">Chat Details</string>
+
 </resources>

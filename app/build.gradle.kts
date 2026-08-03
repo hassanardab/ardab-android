@@ -1,31 +1,27 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
+    // You must provide a version here if it's not defined in your libs.versions.toml catalog.
 }
 
 android {
     namespace = "com.mamo15.ardab"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 35 // Typically 34 or 35 for modern Android, adapt if you have a custom release(36) function
 
     defaultConfig {
         applicationId = "com.mamo15.ardab"
-        minSdk = 26
-        targetSdk = 36
+        minSdk = 23
+        targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            optimization {
-                enable = false
-            }
+            isMinifyEnabled = false
         }
     }
     compileOptions {
@@ -47,6 +43,12 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.navigation.compose)
+
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-firestore-ktx")
+
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
@@ -55,9 +57,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
-    // Add this line to resolve Material Icons:
     implementation("androidx.compose.material:material-icons-extended")
-
-    // splash screen
     implementation(libs.androidx.core.splashscreen)
 }

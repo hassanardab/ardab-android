@@ -2,40 +2,36 @@ package com.mamo15.ardab.ui.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.mamo15.ardab.R
 
 sealed class Screen(
     val route: String,
-    @StringRes val titleRes: Int,
+    @StringRes val title: Int,
     val icon: ImageVector
 ) {
-
     object Dashboard : Screen(
-        "dashboard",
-        R.string.dashboard,
-        Icons.Default.Home
+        route = "dashboard",
+        title = R.string.dashboard,
+        icon = Icons.Default.Home
     )
-
     object Reports : Screen(
-        "reports",
-        R.string.reports,
-        Icons.Default.List
+        route = "reports",
+        title = R.string.reports,
+        icon = Icons.Default.Assessment
     )
-
-    object Profile : Screen(
-        "profile",
-        R.string.profile,
-        Icons.Default.Person
-    )
-
     object Messages : Screen(
-        "messages",
-        R.string.messages,
-        Icons.Default.Email
+        route = "messages",
+        title = R.string.messages,
+        icon = Icons.Default.Email
+    )
+    object Profile : Screen(
+        route = "profile",
+        title = R.string.profile,
+        icon = Icons.Default.Person
     )
 }

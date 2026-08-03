@@ -16,20 +16,21 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.mamo15.ardab.R
 import com.mamo15.ardab.data.PaymentMethod
-import com.mamo15.ardab.data.Transaction
 import com.mamo15.ardab.data.TransactionType
+import com.mamo15.ardab.data.entity.TransactionEntity
+import com.mamo15.ardab.viewmodel.DashboardViewModel
+import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionBottomSheet(
-    projectId: String,
-    onDismiss: () -> Unit,
-    onSave: (Transaction) -> Unit
+    projectId: String,                     // Firestore document ID (String)
+    viewModel: DashboardViewModel,         // ViewModel to save the transaction
+    onDismiss: () -> Unit
 ) {
-    // State
     var selectedType by remember { mutableStateOf(TransactionType.INCOME) }
     var selectedMethod by remember { mutableStateOf(PaymentMethod.CASH) }
     var amount by remember { mutableStateOf("") }
@@ -42,11 +43,9 @@ fun AddTransactionBottomSheet(
         initialSelectedDateMillis = LocalDate.now().toEpochDay() * 24 * 60 * 60 * 1000
     )
 
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val isAmountValid = amount.toDoubleOrNull()?.let { it > 0 } == true
+    val coroutineScope = rememberCoroutineScope()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -62,7 +61,7 @@ fun AddTransactionBottomSheet(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ---- Header ----
+            // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -73,25 +72,20 @@ fun AddTransactionBottomSheet(
                     style = MaterialTheme.typography.headlineSmall
                 )
                 IconButton(onClick = onDismiss) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = stringResource(R.string.close)
-                    )
+                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close))
                 }
             }
 
-            Divider()
+            HorizontalDivider()
 
-            // ---- Date (custom row) ----
+            // Date picker
             OutlinedCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { showDatePicker = true }
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -104,19 +98,13 @@ fun AddTransactionBottomSheet(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(
-                            text = date,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = stringResource(R.string.pick_date)
-                        )
+                        Text(text = date, style = MaterialTheme.typography.bodyLarge)
+                        Icon(Icons.Default.DateRange, contentDescription = stringResource(R.string.pick_date))
                     }
                 }
             }
 
-            // ---- Transaction Type (dropdown) ----
+            // Transaction type dropdown
             ExposedDropdownMenuBox(
                 expanded = typeExpanded,
                 onExpandedChange = { typeExpanded = !typeExpanded }
@@ -127,9 +115,7 @@ fun AddTransactionBottomSheet(
                     readOnly = true,
                     label = { Text(stringResource(R.string.transaction_type)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor()
+                    modifier = Modifier.fillMaxWidth().menuAnchor()
                 )
                 ExposedDropdownMenu(
                     expanded = typeExpanded,
@@ -147,7 +133,7 @@ fun AddTransactionBottomSheet(
                 }
             }
 
-            // ---- Payment Method (chips) ----
+            // Payment method chips
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = stringResource(R.string.payment_method),
@@ -169,24 +155,16 @@ fun AddTransactionBottomSheet(
                 }
             }
 
-            // ---- Amount (with currency prefix & clear) ----
+            // Amount
             OutlinedTextField(
                 value = amount,
                 onValueChange = { amount = it },
                 label = { Text(stringResource(R.string.amount)) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.AttachMoney,
-                        contentDescription = null
-                    )
-                },
+                leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null) },
                 trailingIcon = {
                     if (amount.isNotEmpty()) {
                         IconButton(onClick = { amount = "" }) {
-                            Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = stringResource(R.string.clear)
-                            )
+                            Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.clear))
                         }
                     }
                 },
@@ -201,7 +179,7 @@ fun AddTransactionBottomSheet(
                 shape = MaterialTheme.shapes.medium
             )
 
-            // ---- Description ----
+            // Description
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
@@ -210,7 +188,7 @@ fun AddTransactionBottomSheet(
                 shape = MaterialTheme.shapes.medium
             )
 
-            // ---- Action Buttons ----
+            // Action buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -225,17 +203,24 @@ fun AddTransactionBottomSheet(
                     onClick = {
                         val parsedAmount = amount.toDoubleOrNull() ?: 0.0
                         if (parsedAmount > 0) {
-                            val newTransaction = Transaction(
-                                id = UUID.randomUUID().toString(),
-                                projectId = projectId,
-                                type = selectedType,
-                                method = selectedMethod,
+                            // Convert date string to milliseconds (UTC)
+                            val dateMillis = LocalDate.parse(date)
+                                .atStartOfDay()
+                                .toInstant(ZoneOffset.UTC)
+                                .toEpochMilli()
+
+                            val transactionEntity = TransactionEntity(
+                                projectId = projectId,  // String ID
                                 amount = parsedAmount,
+                                type = selectedType,
+                                paymentMethod = selectedMethod,
                                 description = description,
-                                date = date
+                                date = dateMillis
                             )
-                            onSave(newTransaction)
-                            onDismiss()
+                            coroutineScope.launch {
+                                viewModel.addTransaction(transactionEntity)
+                                onDismiss()
+                            }
                         }
                     },
                     enabled = isAmountValid,
@@ -247,7 +232,7 @@ fun AddTransactionBottomSheet(
         }
     }
 
-    // ---- Date Picker Dialog ----
+    // Date picker dialog
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -275,13 +260,14 @@ fun AddTransactionBottomSheet(
     }
 }
 
-// ---- Helpers ----
+// Helpers for display names
 fun TransactionType.getDisplayNameRes(): Int = when (this) {
     TransactionType.INCOME -> R.string.transaction_type_income
     TransactionType.EXPENSE -> R.string.transaction_type_expense
     TransactionType.BILL -> R.string.transaction_type_bill
     TransactionType.PAYROLL -> R.string.transaction_type_payroll
     TransactionType.LOAN -> R.string.transaction_type_loan
+    TransactionType.LOAN_REPAYMENT -> R.string.transaction_type_loan_repayment
     TransactionType.TRANSFER -> R.string.transaction_type_transfer
 }
 

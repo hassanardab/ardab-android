@@ -41,6 +41,7 @@
     <string name="transaction_type_bill">Bill</string>
     <string name="transaction_type_payroll">Payroll</string>
     <string name="transaction_type_loan">Loan</string>
+    <string name="transaction_type_loan_repayment">Loan Repayment</string>
     <string name="transaction_type_transfer">Transfer</string>
 
     <!-- Payment Methods -->
@@ -70,4 +71,16 @@
     <string name="cash_label">Cash: $%.2f</string>
     <string name="bank_label">Bank: $%.2f</string>
 
+    <!-- Reports Screen -->
+    <string name="reports_title">Reports</string>
+    <string name="report_type_financial">Financial</string>
+    <string name="report_type_employee">Employee</string>
+    <string name="report_type_vendor">Vendor</string>
+    <string name="reports_items_count">%d items</string>
+    <string name="reports_empty_title">No %s items found</string>
+    <string name="generate">Generate</string>
+    <string name="generate_all">Generate All</string>
+    <string name="filter">Filter</string>
+
+    <string name="chat_detail">Chat Details</string>
 </resources>

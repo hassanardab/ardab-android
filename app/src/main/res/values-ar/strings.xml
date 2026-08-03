@@ -39,6 +39,7 @@
     <string name="transaction_type_bill">فاتورة</string>
     <string name="transaction_type_payroll">رواتب</string>
     <string name="transaction_type_loan">قرض</string>
+    <string name="transaction_type_loan_repayment">Loan Repayment</string>
     <string name="transaction_type_transfer">تحويل</string>
 
     <!-- Payment Methods -->
@@ -65,5 +66,18 @@
     <string name="created_at">تم الإنشاء: %s</string>
     <string name="cash_label">النقدي: $%.2f</string>
     <string name="bank_label">البنك: $%.2f</string>
+
+    <!-- Reports Screen -->
+    <string name="reports_title">التقارير</string>
+    <string name="report_type_financial">المالية</string>
+    <string name="report_type_employee">الموظفين</string>
+    <string name="report_type_vendor">الموردين</string>
+    <string name="reports_items_count">%d عنصر</string>
+    <string name="reports_empty_title">لا توجد عناصر من نوع %s</string>
+    <string name="generate">إنشاء</string>
+    <string name="generate_all">إنشاء الكل</string>
+    <string name="filter">تصفية</string>
+
+    <string name="chat_detail">المحادثة</string>
 
 </resources>
