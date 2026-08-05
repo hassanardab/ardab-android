@@ -46,6 +46,8 @@
 │       │   │               │       ├── Color.kt
 │       │   │               │       ├── Theme.kt
 │       │   │               │       └── Type.kt
+│       │   │               ├── util
+│       │   │               │   └── Formatting.kt
 │       │   │               └── viewmodel
 │       │   │                   ├── DashboardViewModelFactory.kt
 │       │   │                   ├── DashboardViewModel.kt
@@ -116,7 +118,7 @@
 ├── README.md
 └── settings.gradle.kts
 
-43 directories, 74 files
+44 directories, 75 files
 
 ============================================================
 FILE: ./.gitignore
@@ -150,16 +152,18 @@ rm -f codebase.txt && ( tree -I '.git|.idea|.gradle|android|ios|assets|documents
 [x] we can add project
 [x] transactions 
     - project card will takes us to the project details page then on it there will be transactions list and add button to AddTransactionBottomSheet.kt
-[] balance correct
 
-[x] we have loans as well 
-[x] add the transactions 
-[] calculation are correct 
+[x] balance correct
+[] numbers should be in English
+[] on the amount the inter button should be next to the details filed and on the detials feild should be submit 
+
+[x] we have loans as well
+[x] add the transactions
+[] calculation are correct
 
 
-[] fix the message UI 
+[] fix the message UI
 [] generate pdf reports 
-[]
 []
 ============================================================
 FILE: ./gradle.properties
@@ -945,6 +949,19 @@ FILE: ./app/src/main/res/drawable/ic_launcher_foreground.xml
         android:strokeColor="#00000000" />
 </vector>
 ============================================================
+FILE: ./app/src/main/java/com/mamo15/ardab/util/Formatting.kt
+============================================================
+package com.mamo15.ardab.util
+
+import java.util.Locale
+
+/**
+ * Formats a Double as a currency string with thousands separators and two decimal places.
+ * Example: 1234567.89 -> "1,234,567.89"
+ */
+fun formatCurrency(amount: Double): String {
+    return String.format(Locale.US, "%,.2f", amount)}
+============================================================
 FILE: ./app/src/main/java/com/mamo15/ardab/ui/navigation/Screen.kt
 ============================================================
 package com.mamo15.ardab.ui.navigation
@@ -1101,30 +1118,45 @@ FILE: ./app/src/main/java/com/mamo15/ardab/ui/screens/ProjectDetailsScreen.kt
 package com.mamo15.ardab.ui.screens
 
 import android.os.Build
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mamo15.ardab.R
+import com.mamo15.ardab.data.TransactionType
+import com.mamo15.ardab.data.entity.TransactionEntity
 import com.mamo15.ardab.ui.components.AddTransactionBottomSheet
+import com.mamo15.ardab.util.formatCurrency
 import com.mamo15.ardab.viewmodel.ProjectDetailsViewModel
 import com.mamo15.ardab.viewmodel.ProjectDetailsViewModelFactory
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
-// Add a new composable to show balances, and display it in the Scaffold.
-
 @Composable
 fun ProjectDetailsScreen(
     projectId: String,
@@ -1137,25 +1169,49 @@ fun ProjectDetailsScreen(
 
     val project by viewModel.project.collectAsState()
     val transactions by viewModel.transactions.collectAsState()
-    val balances by viewModel.balances.collectAsState()  // new
+    val balances by viewModel.balances.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    var showAddTransaction by remember { mutableStateOf(false) }
+
+    // State for bottom sheet
+    var showAddBottomSheet by remember { mutableStateOf(false) }
+    var editingTransaction by remember { mutableStateOf<TransactionEntity?>(null) }
+
+    // Scroll behavior for a modern collapsing TopAppBar
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
-                title = { Text(project?.name ?: stringResource(R.string.project_details)) },
+            LargeTopAppBar(
+                title = {
+                    Text(
+                        text = project?.name ?: stringResource(R.string.project_details),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+                )
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddTransaction = true }) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_transaction))
-            }
+            ExtendedFloatingActionButton(
+                onClick = { showAddBottomSheet = true },
+                icon = { Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_transaction)) },
+                text = { Text(stringResource(R.string.add_transaction)) },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp)
+            )
         }
     ) { paddingValues ->
         Column(
@@ -1163,97 +1219,323 @@ fun ProjectDetailsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Balance Card
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Balance Overview",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = "Cash: $${"%.2f".format(balances.cash)}")
-                        Text(text = "Bank: $${"%.2f".format(balances.bank)}")
-                        Text(text = "Loan: $${"%.2f".format(balances.loan)}")
-                    }
-                }
-            }
+            // Balance Card with premium gradient background
+            BalanceOverviewCard(balances)
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Transaction list
+            // Transaction list heading
+            Text(
+                text = "Recent Transactions",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+            )
+
+            // Transactions state handling
             if (transactions.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(stringResource(R.string.no_transactions_yet))
-                }
+                EmptyStateView()
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 8.dp,
+                        bottom = 88.dp // Space for FAB
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(transactions) { transaction ->
-                        TransactionItem(transaction)
+                    items(
+                        items = transactions,
+                        key = { it.id } // Requires your TransactionEntity to have an 'id' field for animation
+                    ) { transaction ->
+                        TransactionItem(
+                            transaction = transaction,
+                            onLongClick = { editingTransaction = transaction },
+                            modifier = Modifier.animateItem() // Smooth insertion/deletion animations
+                        )
                     }
                 }
             }
         }
     }
 
-    if (showAddTransaction) {
+    // Bottom sheet for adding / editing
+    if (showAddBottomSheet) {
         AddTransactionBottomSheet(
             projectId = projectId,
             onSave = { transaction ->
                 coroutineScope.launch {
                     viewModel.addTransaction(transaction)
+                    showAddBottomSheet = false
                 }
             },
-            onDismiss = { showAddTransaction = false }
+            onDismiss = { showAddBottomSheet = false }
+        )
+    }
+
+    editingTransaction?.let { transaction ->
+        AddTransactionBottomSheet(
+            projectId = projectId,
+            initialTransaction = transaction,
+            onSave = { updatedTransaction ->
+                coroutineScope.launch {
+                    viewModel.updateTransaction(updatedTransaction)
+                    editingTransaction = null
+                }
+            },
+            onDismiss = { editingTransaction = null }
         )
     }
 }
 
 @Composable
-fun TransactionItem(transaction: com.mamo15.ardab.data.entity.TransactionEntity) {
+private fun BalanceOverviewCard(balances: Any /* Replace 'Any' with your actual Balances data class */) {
+    // Note: Assuming `balances` has `.cash`, `.bank`, and `.loan` properties
+
+    // Creating a beautiful gradient brush for the card
+    val gradientBrush = Brush.linearGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.tertiary
+        )
+    )
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(24.dp), // More modern, rounded corners
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(gradientBrush)
+                .padding(24.dp)
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "${transaction.amount} ${transaction.paymentMethod.name}",
-                    style = MaterialTheme.typography.titleMedium
+                    text = "Balance Overview",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White.copy(alpha = 0.8f) // Softer white for subtitles
                 )
-                Text(
-                    text = transaction.type.name,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // We extract balances mapping assuming the data class properties
+                    // Please adjust `balances.cash` etc., if your variable names differ.
+                    // (Using Kotlin reflection-like syntax here just as a placeholder since type is hidden in prompt)
+
+                    BalanceItem(
+                        label = "Cash",
+                        amount = balances.cash,
+                        icon = Icons.Default.Money,
+                        color = Color.White
+                    )
+                    BalanceItem(
+                        label = "Bank",
+                        amount = balances.bank,
+                        icon = Icons.Default.AccountBalance,
+                        color = Color.White
+                    )
+                    BalanceItem(
+                        label = "Loan",
+                        amount = balances.loan,
+                        icon = Icons.Default.CreditCard,
+                        color = Color(0xFFFFCDD2) // Light red/pink to signify debt while staying visible on gradient
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BalanceItem(label: String, amount: Double, icon: ImageVector, color: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(Color.White.copy(alpha = 0.2f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = formatCurrency(amount),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.White.copy(alpha = 0.7f)
+        )
+    }
+}
+
+@Composable
+private fun EmptyStateView() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.ReceiptLong,
+                    contentDescription = null,
+                    modifier = Modifier.size(50.dp),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                 )
             }
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = transaction.description,
+                text = stringResource(R.string.no_transactions_yet),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Tap the + button to add one",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        }
+    }
+}
+
+@Composable
+private fun TransactionItem(
+    transaction: TransactionEntity,
+    onLongClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isIncome = transaction.type == TransactionType.INCOME
+
+    // Semantic colors tailored for light/dark modes
+    val amountColor = when (transaction.type) {
+        TransactionType.INCOME -> Color(0xFF388E3C) // Crisp Green
+        TransactionType.LOAN -> Color(0xFF1976D2)   // Crisp Blue
+        else -> MaterialTheme.colorScheme.error     // Material Red
+    }
+
+    // Determine icon based on transaction type
+    val iconVector = when (transaction.type) {
+        TransactionType.INCOME -> Icons.Default.TrendingUp
+        TransactionType.EXPENSE -> Icons.Default.TrendingDown
+        TransactionType.BILL -> Icons.Default.Receipt
+        TransactionType.PAYROLL -> Icons.Default.Payments
+        TransactionType.LOAN -> Icons.Default.CreditCard
+        TransactionType.LOAN_REPAYMENT -> Icons.Default.Payment
+        TransactionType.TRANSFER -> Icons.Default.SwapHoriz
+    }
+
+    // Format Date beautifully (e.g. "Oct 24, 2023")
+    val formattedDate = remember(transaction.date) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val date = java.time.Instant.ofEpochMilli(transaction.date)
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate()
+            val formatter = java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy")
+            date.format(formatter)
+        } else {
+            val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+            sdf.format(Date(transaction.date))
+        }
+    }
+
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .combinedClickable(
+                onClick = { /* Optional: show transaction details */ },
+                onLongClick = onLongClick
+            ),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 1.dp, // Subtle elevation instead of standard heavy card shadow
+        shadowElevation = 1.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon Container
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        color = amountColor.copy(alpha = 0.1f), // Tinted background based on type
+                        shape = CircleShape // Modern circular icon background
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = iconVector,
+                    contentDescription = null,
+                    tint = amountColor
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Details Column
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Date: ${java.time.Instant.ofEpochMilli(transaction.date).atZone(java.time.ZoneId.systemDefault()).toLocalDate()}",
-                    style = MaterialTheme.typography.bodySmall
+                    text = transaction.type.name.lowercase().replaceFirstChar { it.uppercase() },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                // Combining Description and Date nicely
+                Text(
+                    text = "${transaction.description} • $formattedDate",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Amount and Payment Method Column
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "${if (isIncome) "+" else ""}${formatCurrency(transaction.amount)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = amountColor
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = transaction.paymentMethod.name.lowercase().replaceFirstChar { it.uppercase() },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(4.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
                 )
             }
         }
@@ -1922,6 +2204,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mamo15.ardab.R
+import com.mamo15.ardab.util.formatCurrency
 import com.mamo15.ardab.viewmodel.DashboardViewModel
 import com.mamo15.ardab.viewmodel.DashboardViewModelFactory
 import kotlinx.coroutines.launch
@@ -1964,7 +2247,7 @@ fun DashboardScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = stringResource(R.string.total_balance, summary.totalBalance),
+                        text = "Total Balance: ${formatCurrency(summary.totalBalance)}",
                         style = MaterialTheme.typography.titleLarge
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -1972,9 +2255,9 @@ fun DashboardScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = stringResource(R.string.cash_label, summary.totalCash))
-                        Text(text = stringResource(R.string.bank_label, summary.totalBank))
-                        Text(text = stringResource(R.string.loan_label, summary.totalLoan))
+                        Text(text = "Cash: ${formatCurrency(summary.totalCash)}")
+                        Text(text = "Bank: ${formatCurrency(summary.totalBank)}")
+                        Text(text = "Loan: ${formatCurrency(summary.totalLoan)}")
                     }
                 }
             }
@@ -2146,6 +2429,7 @@ package com.mamo15.ardab.ui.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -2153,41 +2437,121 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.mamo15.ardab.R
 import com.mamo15.ardab.data.PaymentMethod
 import com.mamo15.ardab.data.TransactionType
 import com.mamo15.ardab.data.entity.TransactionEntity
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+// Helper: format raw digits with commas (keeps Latin digits)
+fun formatNumberWithCommas(raw: String): String {
+    if (raw.isEmpty()) return ""
+    val parts = raw.split('.')
+    val integerPart = parts[0]
+    val decimalPart = if (parts.size > 1) parts[1] else ""
+    val formattedInteger = integerPart.reversed().chunked(3).joinToString(",").reversed()
+    return if (decimalPart.isNotEmpty()) "$formattedInteger.$decimalPart" else formattedInteger
+}
+
+fun commaVisualTransformation(): VisualTransformation = VisualTransformation { text ->
+    val raw = text.text
+    val formatted = formatNumberWithCommas(raw)
+    TransformedText(
+        text = AnnotatedString(formatted),
+        offsetMapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                val rawPart = raw.substring(0, offset)
+                return formatNumberWithCommas(rawPart).length
+            }
+            override fun transformedToOriginal(offset: Int): Int {
+                val formattedPart = formatted.substring(0, offset)
+                return formattedPart.replace(",", "").length
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun AddTransactionBottomSheet(
     projectId: String,
-    onSave: (TransactionEntity) -> Unit,   // callback instead of ViewModel
-    onDismiss: () -> Unit
+    onSave: (TransactionEntity) -> Unit,
+    onDismiss: () -> Unit,
+    initialTransaction: TransactionEntity? = null   // null = add mode
 ) {
-    var selectedType by remember { mutableStateOf(TransactionType.INCOME) }
-    var selectedMethod by remember { mutableStateOf(PaymentMethod.CASH) }
-    var amount by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)) }
+    val isEditMode = initialTransaction != null
+
+    // Date handling with Calendar (API 23 compatible)
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+    val calendar = Calendar.getInstance()
+
+    var selectedType by remember { mutableStateOf(initialTransaction?.type ?: TransactionType.INCOME) }
+    var selectedMethod by remember { mutableStateOf(initialTransaction?.paymentMethod ?: PaymentMethod.CASH) }
+
+    // For transfers: source and destination payment methods
+    var sourceMethod by remember { mutableStateOf(PaymentMethod.BANK) }
+    var destMethod by remember { mutableStateOf(PaymentMethod.CASH) }
+
+    var rawAmount by remember { mutableStateOf(if (isEditMode) initialTransaction.amount.toString() else "") }
+    var description by remember { mutableStateOf(initialTransaction?.description ?: "") }
+    var date by remember {
+        mutableStateOf(
+            if (isEditMode) {
+                dateFormat.format(initialTransaction.date)
+            } else {
+                dateFormat.format(calendar.time)
+            }
+        )
+    }
 
     var typeExpanded by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = LocalDate.now().toEpochDay() * 24 * 60 * 60 * 1000
+        initialSelectedDateMillis = try {
+            dateFormat.parse(date)?.time ?: System.currentTimeMillis()
+        } catch (e: Exception) {
+            System.currentTimeMillis()
+        }
     )
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val isAmountValid = amount.toDoubleOrNull()?.let { it > 0 } == true
+    val isAmountValid = rawAmount.toDoubleOrNull()?.let { it > 0 } == true
     val coroutineScope = rememberCoroutineScope()
+
+    // Focus management
+    val focusManager = LocalFocusManager.current
+    val amountFocusRequester = remember { FocusRequester() }
+    val descriptionFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        amountFocusRequester.requestFocus()
+    }
+
+    // When type changes to TRANSFER, reset source/dest to sensible defaults if needed
+    LaunchedEffect(selectedType) {
+        if (selectedType == TransactionType.TRANSFER) {
+            if (sourceMethod == destMethod) {
+                // Ensure they are different
+                destMethod = if (sourceMethod == PaymentMethod.CASH) PaymentMethod.BANK else PaymentMethod.CASH
+            }
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -2210,7 +2574,7 @@ fun AddTransactionBottomSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(R.string.add_transaction),
+                    text = if (isEditMode) "Edit Transaction" else stringResource(R.string.add_transaction),
                     style = MaterialTheme.typography.headlineSmall
                 )
                 IconButton(onClick = onDismiss) {
@@ -2222,9 +2586,7 @@ fun AddTransactionBottomSheet(
 
             // Date picker
             OutlinedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showDatePicker = true }
+                modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true }
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -2257,13 +2619,15 @@ fun AddTransactionBottomSheet(
                     readOnly = true,
                     label = { Text(stringResource(R.string.transaction_type)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
                 )
                 ExposedDropdownMenu(
                     expanded = typeExpanded,
                     onDismissRequest = { typeExpanded = false }
                 ) {
-                    TransactionType.values().forEach { type ->
+                    TransactionType.entries.forEach { type ->
                         DropdownMenuItem(
                             text = { Text(stringResource(type.getDisplayNameRes())) },
                             onClick = {
@@ -2275,58 +2639,157 @@ fun AddTransactionBottomSheet(
                 }
             }
 
-            // Payment method chips
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = stringResource(R.string.payment_method),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    PaymentMethod.values().forEach { method ->
-                        FilterChip(
-                            selected = selectedMethod == method,
-                            onClick = { selectedMethod = method },
-                            label = { Text(stringResource(method.getDisplayNameRes())) },
-                            modifier = Modifier.weight(1f)
+            // Payment method selection – different for transfer vs normal
+            if (selectedType == TransactionType.TRANSFER) {
+                // Transfer: show source and destination
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Source
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = "From",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            PaymentMethod.entries.forEach { method ->
+                                FilterChip(
+                                    selected = sourceMethod == method,
+                                    onClick = {
+                                        if (method != destMethod) sourceMethod = method
+                                    },
+                                    label = { Text(stringResource(method.getDisplayNameRes())) },
+                                    modifier = Modifier.weight(1f),
+                                    enabled = method != destMethod
+                                )
+                            }
+                        }
+                    }
+                    // Destination
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = "To",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            PaymentMethod.entries.forEach { method ->
+                                FilterChip(
+                                    selected = destMethod == method,
+                                    onClick = {
+                                        if (method != sourceMethod) destMethod = method
+                                    },
+                                    label = { Text(stringResource(method.getDisplayNameRes())) },
+                                    modifier = Modifier.weight(1f),
+                                    enabled = method != sourceMethod
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Normal: single payment method chips
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringResource(R.string.payment_method),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        PaymentMethod.entries.forEach { method ->
+                            FilterChip(
+                                selected = selectedMethod == method,
+                                onClick = { selectedMethod = method },
+                                label = { Text(stringResource(method.getDisplayNameRes())) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
             }
 
-            // Amount
+            // Amount field with Next IME action
             OutlinedTextField(
-                value = amount,
-                onValueChange = { amount = it },
+                value = rawAmount,
+                onValueChange = { newRaw ->
+                    var filtered = newRaw.filter { it.isDigit() || it == '.' }
+                    val dotIndex = filtered.indexOfFirst { it == '.' }
+                    if (dotIndex != -1) {
+                        filtered = filtered.take(dotIndex + 1) + filtered.substring(dotIndex + 1).replace(".", "")
+                    }
+                    rawAmount = filtered
+                },
                 label = { Text(stringResource(R.string.amount)) },
                 leadingIcon = { Icon(Icons.Default.AttachMoney, contentDescription = null) },
                 trailingIcon = {
-                    if (amount.isNotEmpty()) {
-                        IconButton(onClick = { amount = "" }) {
+                    if (rawAmount.isNotEmpty()) {
+                        IconButton(onClick = { rawAmount = "" }) {
                             Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.clear))
                         }
                     }
                 },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                isError = amount.isNotEmpty() && !isAmountValid,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { descriptionFocusRequester.requestFocus() }
+                ),
+                isError = rawAmount.isNotEmpty() && !isAmountValid,
                 supportingText = {
-                    if (amount.isNotEmpty() && !isAmountValid) {
+                    if (rawAmount.isNotEmpty() && !isAmountValid) {
                         Text(stringResource(R.string.enter_valid_amount))
                     }
                 },
-                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = commaVisualTransformation(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(amountFocusRequester),
                 shape = MaterialTheme.shapes.medium
             )
 
-            // Description
+            // Description field with Done IME action
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text(stringResource(R.string.description)) },
-                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        if (isAmountValid) {
+                            saveTransaction(
+                                parsedAmount = rawAmount.toDoubleOrNull() ?: 0.0,
+                                dateFormat = dateFormat,
+                                date = date,
+                                projectId = projectId,
+                                selectedType = selectedType,
+                                selectedMethod = selectedMethod,
+                                sourceMethod = sourceMethod,
+                                destMethod = destMethod,
+                                description = description,
+                                initialTransaction = initialTransaction,
+                                onSave = onSave,
+                                onDismiss = onDismiss,
+                                focusManager = focusManager,
+                                coroutineScope = coroutineScope
+                            )
+                        }
+                    }
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(descriptionFocusRequester),
                 shape = MaterialTheme.shapes.medium
             )
 
@@ -2343,31 +2806,30 @@ fun AddTransactionBottomSheet(
                 }
                 Button(
                     onClick = {
-                        val parsedAmount = amount.toDoubleOrNull() ?: 0.0
+                        val parsedAmount = rawAmount.toDoubleOrNull() ?: 0.0
                         if (parsedAmount > 0) {
-                            val dateMillis = LocalDate.parse(date)
-                                .atStartOfDay()
-                                .toInstant(ZoneOffset.UTC)
-                                .toEpochMilli()
-
-                            val transaction = TransactionEntity(
+                            saveTransaction(
+                                parsedAmount = parsedAmount,
+                                dateFormat = dateFormat,
+                                date = date,
                                 projectId = projectId,
-                                amount = parsedAmount,
-                                type = selectedType,
-                                paymentMethod = selectedMethod,
+                                selectedType = selectedType,
+                                selectedMethod = selectedMethod,
+                                sourceMethod = sourceMethod,
+                                destMethod = destMethod,
                                 description = description,
-                                date = dateMillis
+                                initialTransaction = initialTransaction,
+                                onSave = onSave,
+                                onDismiss = onDismiss,
+                                focusManager = focusManager,
+                                coroutineScope = coroutineScope
                             )
-                            coroutineScope.launch {
-                                onSave(transaction)
-                                onDismiss()
-                            }
                         }
                     },
                     enabled = isAmountValid,
                     modifier = Modifier.weight(2f)
                 ) {
-                    Text(stringResource(R.string.save))
+                    Text(if (isEditMode) "Update" else stringResource(R.string.save))
                 }
             }
         }
@@ -2381,8 +2843,7 @@ fun AddTransactionBottomSheet(
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            val localDate = LocalDate.ofEpochDay(millis / (24 * 60 * 60 * 1000))
-                            date = localDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                            date = dateFormat.format(millis)
                         }
                         showDatePicker = false
                     }
@@ -2401,7 +2862,78 @@ fun AddTransactionBottomSheet(
     }
 }
 
-// Helpers for display names (same as before)
+// Helper function to handle saving (single transaction or transfer pair)
+private fun saveTransaction(
+    parsedAmount: Double,
+    dateFormat: SimpleDateFormat,
+    date: String,
+    projectId: String,
+    selectedType: TransactionType,
+    selectedMethod: PaymentMethod,
+    sourceMethod: PaymentMethod,
+    destMethod: PaymentMethod,
+    description: String,
+    initialTransaction: TransactionEntity?,
+    onSave: (TransactionEntity) -> Unit,
+    onDismiss: () -> Unit,
+    focusManager: androidx.compose.ui.platform.FocusManager,
+    coroutineScope: kotlinx.coroutines.CoroutineScope
+) {
+    if (parsedAmount <= 0) return
+
+    val dateMillis = try {
+        dateFormat.parse(date)?.time ?: System.currentTimeMillis()
+    } catch (e: Exception) {
+        System.currentTimeMillis()
+    }
+
+    if (selectedType == TransactionType.TRANSFER) {
+        // Create two transactions: expense from source, income to destination
+        val expenseTransaction = TransactionEntity(
+            id = "", // new id
+            projectId = projectId,
+            amount = parsedAmount,
+            type = TransactionType.EXPENSE,
+            paymentMethod = sourceMethod,
+            description = "Transfer to ${destMethod.name} - $description",
+            date = dateMillis
+        )
+        val incomeTransaction = TransactionEntity(
+            id = "",
+            projectId = projectId,
+            amount = parsedAmount,
+            type = TransactionType.INCOME,
+            paymentMethod = destMethod,
+            description = "Transfer from ${sourceMethod.name} - $description",
+            date = dateMillis
+        )
+
+        coroutineScope.launch {
+            onSave(expenseTransaction)
+            onSave(incomeTransaction)
+            onDismiss()
+            focusManager.clearFocus()
+        }
+    } else {
+        // Normal single transaction
+        val transaction = TransactionEntity(
+            id = initialTransaction?.id ?: "",
+            projectId = projectId,
+            amount = parsedAmount,
+            type = selectedType,
+            paymentMethod = selectedMethod,
+            description = description,
+            date = dateMillis
+        )
+        coroutineScope.launch {
+            onSave(transaction)
+            onDismiss()
+            focusManager.clearFocus()
+        }
+    }
+}
+
+// Helper functions to get display names
 fun TransactionType.getDisplayNameRes(): Int = when (this) {
     TransactionType.INCOME -> R.string.transaction_type_income
     TransactionType.EXPENSE -> R.string.transaction_type_expense
@@ -2609,7 +3141,7 @@ FILE: ./app/src/main/java/com/mamo15/ardab/viewmodel/ProjectDetailsViewModel.kt
 package com.mamo15.ardab.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope  // <-- add this
+import androidx.lifecycle.viewModelScope
 import com.mamo15.ardab.data.PaymentMethod
 import com.mamo15.ardab.data.TransactionType
 import com.mamo15.ardab.data.entity.ProjectEntity
@@ -2617,7 +3149,7 @@ import com.mamo15.ardab.data.entity.TransactionEntity
 import com.mamo15.ardab.data.repository.ProjectRepository
 import com.mamo15.ardab.data.repository.TransactionRepository
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch  // <-- add this
+import kotlinx.coroutines.launch
 
 class ProjectDetailsViewModel(
     private val projectRepo: ProjectRepository,
@@ -2629,7 +3161,7 @@ class ProjectDetailsViewModel(
     val project: StateFlow<ProjectEntity?> = _project.asStateFlow()
 
     val transactions: StateFlow<List<TransactionEntity>> = transactionRepo
-        .getTransactionsForProject(projectId)  // now resolved
+        .getTransactionsForProject(projectId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val balances: StateFlow<ProjectBalances> = transactions.map { list ->
@@ -2643,13 +3175,21 @@ class ProjectDetailsViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProjectBalances(0.0, 0.0, 0.0))
 
     init {
-        viewModelScope.launch {   // now the coroutine is properly scoped
+        viewModelScope.launch {
             _project.value = projectRepo.getProjectById(projectId)
         }
     }
 
     suspend fun addTransaction(transaction: TransactionEntity) {
-        transactionRepo.insertTransaction(transaction)  // now resolved
+        transactionRepo.insertTransaction(transaction)
+    }
+
+    suspend fun updateTransaction(transaction: TransactionEntity) {
+        transactionRepo.updateTransaction(transaction)
+    }
+
+    suspend fun deleteTransaction(transaction: TransactionEntity) {
+        transactionRepo.deleteTransaction(transaction)
     }
 
     data class ProjectBalances(

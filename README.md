@@ -8,14 +8,16 @@ rm -f codebase.txt && ( tree -I '.git|.idea|.gradle|android|ios|assets|documents
 [x] we can add project
 [x] transactions 
     - project card will takes us to the project details page then on it there will be transactions list and add button to AddTransactionBottomSheet.kt
-[] balance correct
 
-[x] we have loans as well 
-[x] add the transactions 
-[] calculation are correct 
+[x] balance correct
+[] numbers should be in English
+[] on the amount the inter button should be next to the details filed and on the detials feild should be submit 
+
+[x] we have loans as well
+[x] add the transactions
+[] calculation are correct
 
 
-[] fix the message UI 
+[] fix the message UI
 [] generate pdf reports 
-[]
 []

@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mamo15.ardab.R
+import com.mamo15.ardab.util.formatCurrency
 import com.mamo15.ardab.viewmodel.DashboardViewModel
 import com.mamo15.ardab.viewmodel.DashboardViewModelFactory
 import kotlinx.coroutines.launch
@@ -81,7 +82,7 @@ fun DashboardScreen(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = stringResource(R.string.total_balance, summary.totalBalance),
+                        text = "Total Balance: ${formatCurrency(summary.totalBalance)}",
                         style = MaterialTheme.typography.titleLarge
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -89,9 +90,9 @@ fun DashboardScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = stringResource(R.string.cash_label, summary.totalCash))
-                        Text(text = stringResource(R.string.bank_label, summary.totalBank))
-                        Text(text = stringResource(R.string.loan_label, summary.totalLoan))
+                        Text(text = "Cash: ${formatCurrency(summary.totalCash)}")
+                        Text(text = "Bank: ${formatCurrency(summary.totalBank)}")
+                        Text(text = "Loan: ${formatCurrency(summary.totalLoan)}")
                     }
                 }
             }
