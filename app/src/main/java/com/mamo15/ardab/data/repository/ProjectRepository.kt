@@ -32,7 +32,14 @@ class ProjectRepository(private val firestore: FirebaseFirestore) {
         docRef.set(entity).await()
         return docRef.id
     }
-
+    suspend fun getProjectById(id: String): ProjectEntity? {
+        return try {
+            val doc = collection.document(id).get().await()
+            doc.toObject<ProjectEntity>()?.copy(id = doc.id)
+        } catch (e: Exception) {
+            null
+        }
+    }
     suspend fun updateProject(project: ProjectEntity) {
         collection.document(project.id).set(project).await()  // no .toString()
     }

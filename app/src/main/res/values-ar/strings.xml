@@ -38,8 +38,8 @@
     <string name="transaction_type_expense">مصروف</string>
     <string name="transaction_type_bill">فاتورة</string>
     <string name="transaction_type_payroll">رواتب</string>
-    <string name="transaction_type_loan">قرض</string>
-    <string name="transaction_type_loan_repayment">Loan Repayment</string>
+    <string name="transaction_type_loan">دين</string>
+    <string name="transaction_type_loan_repayment">سداد دين</string>
     <string name="transaction_type_transfer">تحويل</string>
 
     <!-- Payment Methods -->
@@ -66,6 +66,7 @@
     <string name="created_at">تم الإنشاء: %s</string>
     <string name="cash_label">النقدي: $%.2f</string>
     <string name="bank_label">البنك: $%.2f</string>
+    <string name="loan_label">الديون: $%.2f</string>
 
     <!-- Reports Screen -->
     <string name="reports_title">التقارير</string>
@@ -79,5 +80,10 @@
     <string name="filter">تصفية</string>
 
     <string name="chat_detail">المحادثة</string>
+
+    <!-- Project Details Screen -->
+    <string name="project_details">Project Details</string>
+    <string name="no_transactions_yet">لا يوجد عمليات مالية</string>
+
 
 </resources>

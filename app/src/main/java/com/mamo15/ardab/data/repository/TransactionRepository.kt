@@ -2,7 +2,7 @@ package com.mamo15.ardab.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
-import com.mamo15.ardab.data.entity.TransactionEntity   // correct import
+import com.mamo15.ardab.data.entity.TransactionEntity
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -58,7 +58,31 @@ class TransactionRepository(private val firestore: FirebaseFirestore) {
         collection.document(transaction.id).delete().await()
     }
 
-    // Aggregated balances
+    // Per‑project balances
+    suspend fun getCashBalanceForProject(projectId: String): Double =
+        collection.whereEqualTo("projectId", projectId)
+            .whereEqualTo("paymentMethod", "CASH")
+            .get().await()
+            .documents.sumOf { it.getDouble("amount") ?: 0.0 }
+
+    suspend fun getBankBalanceForProject(projectId: String): Double =
+        collection.whereEqualTo("projectId", projectId)
+            .whereEqualTo("paymentMethod", "BANK")
+            .get().await()
+            .documents.sumOf { it.getDouble("amount") ?: 0.0 }
+
+    suspend fun getLoanBalanceForProject(projectId: String): Double {
+        val snapshot = collection.whereEqualTo("projectId", projectId)
+            .whereIn("type", listOf("LOAN", "LOAN_REPAYMENT"))
+            .get().await()
+        return snapshot.documents.sumOf { doc ->
+            val amount = doc.getDouble("amount") ?: 0.0
+            val type = doc.getString("type")
+            if (type == "LOAN") amount else -amount
+        }
+    }
+
+    // Total (all projects) balances
     suspend fun getTotalCashBalance(): Double =
         collection.whereEqualTo("paymentMethod", "CASH").get().await()
             .documents.sumOf { it.getDouble("amount") ?: 0.0 }
@@ -66,4 +90,13 @@ class TransactionRepository(private val firestore: FirebaseFirestore) {
     suspend fun getTotalBankBalance(): Double =
         collection.whereEqualTo("paymentMethod", "BANK").get().await()
             .documents.sumOf { it.getDouble("amount") ?: 0.0 }
+
+    suspend fun getTotalLoanBalance(): Double {
+        val snapshot = collection.whereIn("type", listOf("LOAN", "LOAN_REPAYMENT")).get().await()
+        return snapshot.documents.sumOf { doc ->
+            val amount = doc.getDouble("amount") ?: 0.0
+            val type = doc.getString("type")
+            if (type == "LOAN") amount else -amount
+        }
+    }
 }

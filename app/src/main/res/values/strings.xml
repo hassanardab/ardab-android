@@ -70,6 +70,8 @@
     <string name="created_at">Created: %s</string>
     <string name="cash_label">Cash: $%.2f</string>
     <string name="bank_label">Bank: $%.2f</string>
+    <string name="loan_label">Loans: $%.2f</string>
+
 
     <!-- Reports Screen -->
     <string name="reports_title">Reports</string>
@@ -83,4 +85,8 @@
     <string name="filter">Filter</string>
 
     <string name="chat_detail">Chat Details</string>
+
+    <!-- Project Details Screen -->
+    <string name="project_details">Project Details</string>
+    <string name="no_transactions_yet">No Transactions yet</string>
 </resources>

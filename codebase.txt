@@ -40,6 +40,7 @@
 │       │   │               │   │   ├── DashboardScreen.kt
 │       │   │               │   │   ├── MessagesScreen.kt
 │       │   │               │   │   ├── ProfileScreen.kt
+│       │   │               │   │   ├── ProjectDetailsScreen.kt
 │       │   │               │   │   └── ReportsScreen.kt
 │       │   │               │   └── theme
 │       │   │               │       ├── Color.kt
@@ -47,7 +48,9 @@
 │       │   │               │       └── Type.kt
 │       │   │               └── viewmodel
 │       │   │                   ├── DashboardViewModelFactory.kt
-│       │   │                   └── DashboardViewModel.kt
+│       │   │                   ├── DashboardViewModel.kt
+│       │   │                   ├── ProjectDetailsViewModelFactory.kt
+│       │   │                   └── ProjectDetailsViewModel.kt
 │       │   ├── keepRules
 │       │   │   └── rules.keep
 │       │   └── res
@@ -113,7 +116,7 @@
 ├── README.md
 └── settings.gradle.kts
 
-43 directories, 71 files
+43 directories, 74 files
 
 ============================================================
 FILE: ./.gitignore
@@ -141,10 +144,18 @@ FILE: ./README.md
 rm -f codebase.txt && ( tree -I '.git|.idea|.gradle|android|ios|assets|documents|node_modules|dist|build|captures|.externalNativeBuild|.cxx|.expo|*.iml|.DS_Store|package-lock.json|codebase.txt|tree.txt|gradle|release|keystore.jks' && find .   \(     -name .git -o     -name .idea -o     -name .gradle -o     -name gradle -o     -name android -o     -name ios -o     -name assets -o     -name documents -o     -name node_modules -o     -name dist -o     -name build -o     -name captures -o     -name .externalNativeBuild -o     -name .cxx -o     -path "./app/release"   \) -prune -o   -type f   ! -name "codebase.txt"   ! -name "tree.txt"   ! -name "package-lock.json"   ! -name "local.properties"   ! -name "*.iml"   ! -name ".DS_Store"   ! -name "*.png"   ! -name "*.jpg"   ! -name "*.jpeg"   ! -name "*.gif"   ! -name "*.webp"   ! -name "*.svg"   ! -name "*.ttf"   ! -name "*.otf"   ! -name "*.woff"   ! -name "*.woff2"   ! -name "*.log"   ! -path "./app/keystore.jks"   -print | while IFS= read -r file; do   echo -e "\n============================================================";   echo "FILE: $file";   echo "============================================================";   cat "$file"; done; ) > codebase.txt
 
 ## Todos
-[] projects, transactions work using local storage.
-[] we have loans as well 
-[] add the transactions 
+[x] projects, transactions work using local storage.
+[x] push the code into github
+
+[x] we can add project
+[x] transactions 
+    - project card will takes us to the project details page then on it there will be transactions list and add button to AddTransactionBottomSheet.kt
+[] balance correct
+
+[x] we have loans as well 
+[x] add the transactions 
 [] calculation are correct 
+
 
 [] fix the message UI 
 [] generate pdf reports 
@@ -336,8 +347,8 @@ FILE: ./app/src/main/res/values-ar/strings.xml
     <string name="transaction_type_expense">مصروف</string>
     <string name="transaction_type_bill">فاتورة</string>
     <string name="transaction_type_payroll">رواتب</string>
-    <string name="transaction_type_loan">قرض</string>
-    <string name="transaction_type_loan_repayment">Loan Repayment</string>
+    <string name="transaction_type_loan">دين</string>
+    <string name="transaction_type_loan_repayment">سداد دين</string>
     <string name="transaction_type_transfer">تحويل</string>
 
     <!-- Payment Methods -->
@@ -364,6 +375,7 @@ FILE: ./app/src/main/res/values-ar/strings.xml
     <string name="created_at">تم الإنشاء: %s</string>
     <string name="cash_label">النقدي: $%.2f</string>
     <string name="bank_label">البنك: $%.2f</string>
+    <string name="loan_label">الديون: $%.2f</string>
 
     <!-- Reports Screen -->
     <string name="reports_title">التقارير</string>
@@ -377,6 +389,11 @@ FILE: ./app/src/main/res/values-ar/strings.xml
     <string name="filter">تصفية</string>
 
     <string name="chat_detail">المحادثة</string>
+
+    <!-- Project Details Screen -->
+    <string name="project_details">Project Details</string>
+    <string name="no_transactions_yet">لا يوجد عمليات مالية</string>
+
 
 </resources>
 ============================================================
@@ -499,6 +516,7 @@ FILE: ./app/src/main/res/values-ru/strings.xml
     <string name="created_at">Создан: %s</string>
     <string name="cash_label">Наличные: $%.2f</string>
     <string name="bank_label">Банк: $%.2f</string>
+    <string name="loan_label">Loans: $%.2f</string>
 
     <!-- Reports Screen -->
     <string name="reports_title">Отчеты</string>
@@ -512,6 +530,11 @@ FILE: ./app/src/main/res/values-ru/strings.xml
     <string name="filter">Фильтр</string>
 
     <string name="chat_detail">Chat Details</string>
+
+    <!-- Project Details Screen -->
+    <string name="project_details">Project Details</string>
+    <string name="no_transactions_yet">لا يوجد عمليات مالية</string>
+
 
 </resources>
 ============================================================
@@ -628,6 +651,8 @@ FILE: ./app/src/main/res/values/strings.xml
     <string name="created_at">Created: %s</string>
     <string name="cash_label">Cash: $%.2f</string>
     <string name="bank_label">Bank: $%.2f</string>
+    <string name="loan_label">Loans: $%.2f</string>
+
 
     <!-- Reports Screen -->
     <string name="reports_title">Reports</string>
@@ -641,6 +666,10 @@ FILE: ./app/src/main/res/values/strings.xml
     <string name="filter">Filter</string>
 
     <string name="chat_detail">Chat Details</string>
+
+    <!-- Project Details Screen -->
+    <string name="project_details">Project Details</string>
+    <string name="no_transactions_yet">No Transactions yet</string>
 </resources>
 
 ============================================================
@@ -1066,6 +1095,170 @@ val Typography = Typography(
     )
     */
 )
+============================================================
+FILE: ./app/src/main/java/com/mamo15/ardab/ui/screens/ProjectDetailsScreen.kt
+============================================================
+package com.mamo15.ardab.ui.screens
+
+import android.os.Build
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.mamo15.ardab.R
+import com.mamo15.ardab.ui.components.AddTransactionBottomSheet
+import com.mamo15.ardab.viewmodel.ProjectDetailsViewModel
+import com.mamo15.ardab.viewmodel.ProjectDetailsViewModelFactory
+import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalMaterial3Api::class)
+// Add a new composable to show balances, and display it in the Scaffold.
+
+@Composable
+fun ProjectDetailsScreen(
+    projectId: String,
+    navController: NavController
+) {
+    val context = LocalContext.current
+    val viewModel: ProjectDetailsViewModel = viewModel(
+        factory = ProjectDetailsViewModelFactory(context, projectId)
+    )
+
+    val project by viewModel.project.collectAsState()
+    val transactions by viewModel.transactions.collectAsState()
+    val balances by viewModel.balances.collectAsState()  // new
+    val coroutineScope = rememberCoroutineScope()
+    var showAddTransaction by remember { mutableStateOf(false) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(project?.name ?: stringResource(R.string.project_details)) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showAddTransaction = true }) {
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_transaction))
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            // Balance Card
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Balance Overview",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = "Cash: $${"%.2f".format(balances.cash)}")
+                        Text(text = "Bank: $${"%.2f".format(balances.bank)}")
+                        Text(text = "Loan: $${"%.2f".format(balances.loan)}")
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Transaction list
+            if (transactions.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(stringResource(R.string.no_transactions_yet))
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(transactions) { transaction ->
+                        TransactionItem(transaction)
+                    }
+                }
+            }
+        }
+    }
+
+    if (showAddTransaction) {
+        AddTransactionBottomSheet(
+            projectId = projectId,
+            onSave = { transaction ->
+                coroutineScope.launch {
+                    viewModel.addTransaction(transaction)
+                }
+            },
+            onDismiss = { showAddTransaction = false }
+        )
+    }
+}
+
+@Composable
+fun TransactionItem(transaction: com.mamo15.ardab.data.entity.TransactionEntity) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "${transaction.amount} ${transaction.paymentMethod.name}",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = transaction.type.name,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Text(
+                text = transaction.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Text(
+                    text = "Date: ${java.time.Instant.ofEpochMilli(transaction.date).atZone(java.time.ZoneId.systemDefault()).toLocalDate()}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+    }
+}
 ============================================================
 FILE: ./app/src/main/java/com/mamo15/ardab/ui/screens/ProfileScreen.kt
 ============================================================
@@ -1690,6 +1883,7 @@ FILE: ./app/src/main/java/com/mamo15/ardab/ui/screens/DashboardScreen.kt
 ============================================================
 package com.mamo15.ardab.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -1726,15 +1920,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.mamo15.ardab.R
 import com.mamo15.ardab.viewmodel.DashboardViewModel
 import com.mamo15.ardab.viewmodel.DashboardViewModelFactory
 import kotlinx.coroutines.launch
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
+    navController: NavController,
     viewModel: DashboardViewModel = viewModel(
         factory = DashboardViewModelFactory(LocalContext.current)
     )
@@ -1743,7 +1938,6 @@ fun DashboardScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var newProjectName by remember { mutableStateOf("") }
 
-    // Collect state from ViewModel
     val projects by viewModel.projects.collectAsState()
     val summary by viewModel.dashboardSummary.collectAsState()
 
@@ -1767,7 +1961,6 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Total Balance Card
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
@@ -1781,6 +1974,7 @@ fun DashboardScreen(
                     ) {
                         Text(text = stringResource(R.string.cash_label, summary.totalCash))
                         Text(text = stringResource(R.string.bank_label, summary.totalBank))
+                        Text(text = stringResource(R.string.loan_label, summary.totalLoan))
                     }
                 }
             }
@@ -1807,10 +2001,14 @@ fun DashboardScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(projects) { project ->
-                        Card(modifier = Modifier.fillMaxWidth()) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { navController.navigate("project/${project.id}") }
+                        ) {
                             Column(modifier = Modifier.padding(12.dp)) {
                                 Text(
-                                    text = project.name,  // now resolved correctly
+                                    text = project.name,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
@@ -1821,7 +2019,6 @@ fun DashboardScreen(
         }
     }
 
-    // Add Project Dialog (unchanged)
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
@@ -1962,19 +2159,18 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.mamo15.ardab.R
 import com.mamo15.ardab.data.PaymentMethod
-import com.mamo15.ardab.data.entity.TransactionEntity
 import com.mamo15.ardab.data.TransactionType
-import com.mamo15.ardab.viewmodel.DashboardViewModel
+import com.mamo15.ardab.data.entity.TransactionEntity
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionBottomSheet(
     projectId: String,
-    viewModel: DashboardViewModel,      // Pass the ViewModel
+    onSave: (TransactionEntity) -> Unit,   // callback instead of ViewModel
     onDismiss: () -> Unit
 ) {
     var selectedType by remember { mutableStateOf(TransactionType.INCOME) }
@@ -2149,14 +2345,13 @@ fun AddTransactionBottomSheet(
                     onClick = {
                         val parsedAmount = amount.toDoubleOrNull() ?: 0.0
                         if (parsedAmount > 0) {
-                            // Convert date string to milliseconds (UTC)
                             val dateMillis = LocalDate.parse(date)
                                 .atStartOfDay()
                                 .toInstant(ZoneOffset.UTC)
                                 .toEpochMilli()
 
-                            val transactionEntity = TransactionEntity(
-                                projectId = projectId,  // now String
+                            val transaction = TransactionEntity(
+                                projectId = projectId,
                                 amount = parsedAmount,
                                 type = selectedType,
                                 paymentMethod = selectedMethod,
@@ -2164,7 +2359,7 @@ fun AddTransactionBottomSheet(
                                 date = dateMillis
                             )
                             coroutineScope.launch {
-                                viewModel.addTransaction(transactionEntity)
+                                onSave(transaction)
                                 onDismiss()
                             }
                         }
@@ -2206,7 +2401,7 @@ fun AddTransactionBottomSheet(
     }
 }
 
-// Helpers (same as before)
+// Helpers for display names (same as before)
 fun TransactionType.getDisplayNameRes(): Int = when (this) {
     TransactionType.INCOME -> R.string.transaction_type_income
     TransactionType.EXPENSE -> R.string.transaction_type_expense
@@ -2236,12 +2431,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 // Imports for screen destinations
 import com.mamo15.ardab.ui.navigation.Screen
 import com.mamo15.ardab.ui.screens.DashboardScreen
 import com.mamo15.ardab.ui.screens.MessagesScreen
 import com.mamo15.ardab.ui.screens.ProfileScreen
+import com.mamo15.ardab.ui.screens.ProjectDetailsScreen
 import com.mamo15.ardab.ui.screens.ReportsScreen // Fixed unresolved reference
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -2295,7 +2493,7 @@ fun MainScreen() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Dashboard.route) {
-                DashboardScreen()
+                DashboardScreen(navController = navController)
             }
             composable(Screen.Reports.route) {
                 ReportsScreen()
@@ -2303,8 +2501,19 @@ fun MainScreen() {
             composable(Screen.Messages.route) {
                 MessagesScreen()
             }
+
             composable(Screen.Profile.route) {
                 ProfileScreen()
+            }
+            composable(
+                route = "project/{projectId}",
+                arguments = listOf(navArgument("projectId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val projectId = backStackEntry.arguments?.getString("projectId") ?: ""
+                ProjectDetailsScreen(
+                    projectId = projectId,
+                    navController = navController
+                )
             }
         }
     }
@@ -2395,41 +2604,118 @@ class DashboardViewModelFactory(private val context: Context) : ViewModelProvide
     }
 }
 ============================================================
+FILE: ./app/src/main/java/com/mamo15/ardab/viewmodel/ProjectDetailsViewModel.kt
+============================================================
+package com.mamo15.ardab.viewmodel
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope  // <-- add this
+import com.mamo15.ardab.data.PaymentMethod
+import com.mamo15.ardab.data.TransactionType
+import com.mamo15.ardab.data.entity.ProjectEntity
+import com.mamo15.ardab.data.entity.TransactionEntity
+import com.mamo15.ardab.data.repository.ProjectRepository
+import com.mamo15.ardab.data.repository.TransactionRepository
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch  // <-- add this
+
+class ProjectDetailsViewModel(
+    private val projectRepo: ProjectRepository,
+    private val transactionRepo: TransactionRepository,
+    private val projectId: String
+) : ViewModel() {
+
+    private val _project = MutableStateFlow<ProjectEntity?>(null)
+    val project: StateFlow<ProjectEntity?> = _project.asStateFlow()
+
+    val transactions: StateFlow<List<TransactionEntity>> = transactionRepo
+        .getTransactionsForProject(projectId)  // now resolved
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val balances: StateFlow<ProjectBalances> = transactions.map { list ->
+        val cash = list.filter { it.paymentMethod == PaymentMethod.CASH }
+            .sumOf { if (it.type in listOf(TransactionType.INCOME, TransactionType.LOAN)) it.amount else -it.amount }
+        val bank = list.filter { it.paymentMethod == PaymentMethod.BANK }
+            .sumOf { if (it.type in listOf(TransactionType.INCOME, TransactionType.LOAN)) it.amount else -it.amount }
+        val loan = list.filter { it.type == TransactionType.LOAN || it.type == TransactionType.LOAN_REPAYMENT }
+            .sumOf { if (it.type == TransactionType.LOAN) it.amount else -it.amount }
+        ProjectBalances(cash, bank, loan)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProjectBalances(0.0, 0.0, 0.0))
+
+    init {
+        viewModelScope.launch {   // now the coroutine is properly scoped
+            _project.value = projectRepo.getProjectById(projectId)
+        }
+    }
+
+    suspend fun addTransaction(transaction: TransactionEntity) {
+        transactionRepo.insertTransaction(transaction)  // now resolved
+    }
+
+    data class ProjectBalances(
+        val cash: Double = 0.0,
+        val bank: Double = 0.0,
+        val loan: Double = 0.0
+    )
+}
+============================================================
+FILE: ./app/src/main/java/com/mamo15/ardab/viewmodel/ProjectDetailsViewModelFactory.kt
+============================================================
+package com.mamo15.ardab.viewmodel
+
+import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.google.firebase.firestore.FirebaseFirestore
+import com.mamo15.ardab.data.repository.ProjectRepository
+import com.mamo15.ardab.data.repository.TransactionRepository
+
+class ProjectDetailsViewModelFactory(
+    private val context: Context,
+    private val projectId: String
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(ProjectDetailsViewModel::class.java)) {
+            val firestore = FirebaseFirestore.getInstance()
+            val projectRepo = ProjectRepository(firestore)
+            val transactionRepo = TransactionRepository(firestore)
+            @Suppress("UNCHECKED_CAST")
+            return ProjectDetailsViewModel(projectRepo, transactionRepo, projectId) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+============================================================
 FILE: ./app/src/main/java/com/mamo15/ardab/viewmodel/DashboardViewModel.kt
 ============================================================
 package com.mamo15.ardab.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewModelScope  // <-- add this import
 import com.mamo15.ardab.data.entity.ProjectEntity
 import com.mamo15.ardab.data.entity.TransactionEntity
 import com.mamo15.ardab.data.repository.ProjectRepository
 import com.mamo15.ardab.data.repository.TransactionRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.launch  // <-- add this import (optional, but good practice)
 
 class DashboardViewModel(
     private val projectRepo: ProjectRepository,
     private val transactionRepo: TransactionRepository
 ) : ViewModel() {
 
-    // Live list of projects
     val projects: StateFlow<List<ProjectEntity>> = projectRepo.getAllProjects()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Combined summary: projects + computed balances
     val dashboardSummary: StateFlow<DashboardSummary> = combine(
         projects,
-        // We'll fetch balances each time projects change, but we need flows for combine.
-        // To avoid making balances flows, we can use flatMapLatest or just use a separate state.
-        // Simpler: use projects as source and compute balances on demand.
-        // We'll create a separate flow for balances:
         balanceFlow()
-    ) { projects, (totalCash, totalBank) ->
+    ) { projects, (totalCash, totalBank, totalLoan) ->
         DashboardSummary(
             totalCash = totalCash,
             totalBank = totalBank,
+            totalLoan = totalLoan,
             totalBalance = totalCash + totalBank,
             activeProjectsCount = projects.size,
             projects = projects
@@ -2440,27 +2726,28 @@ class DashboardViewModel(
         initialValue = DashboardSummary()
     )
 
-    // Create a flow that emits balances periodically or on demand
-    private fun balanceFlow(): Flow<Pair<Double, Double>> = flow {
+    private fun balanceFlow(): Flow<Triple<Double, Double, Double>> = flow {
         while (true) {
             val cash = transactionRepo.getTotalCashBalance()
             val bank = transactionRepo.getTotalBankBalance()
-            emit(cash to bank)
-            delay(5000) // Refresh every 5 seconds or use a trigger (e.g., when transactions change)
+            val loan = transactionRepo.getTotalLoanBalance()
+            emit(Triple(cash, bank, loan))
+            delay(5000)
         }
-    }.catch { emit(0.0 to 0.0) }
+    }.catch { emit(Triple(0.0, 0.0, 0.0)) }
 
     suspend fun addProject(name: String) {
         projectRepo.insertProject(ProjectEntity(name = name))
     }
 
     suspend fun addTransaction(transaction: TransactionEntity) {
-        transactionRepo.insertTransaction(transaction)
+        transactionRepo.insertTransaction(transaction)  // now resolved
     }
 
     data class DashboardSummary(
         val totalCash: Double = 0.0,
         val totalBank: Double = 0.0,
+        val totalLoan: Double = 0.0,
         val totalBalance: Double = 0.0,
         val activeProjectsCount: Int = 0,
         val projects: List<ProjectEntity> = emptyList()
@@ -2578,7 +2865,14 @@ class ProjectRepository(private val firestore: FirebaseFirestore) {
         docRef.set(entity).await()
         return docRef.id
     }
-
+    suspend fun getProjectById(id: String): ProjectEntity? {
+        return try {
+            val doc = collection.document(id).get().await()
+            doc.toObject<ProjectEntity>()?.copy(id = doc.id)
+        } catch (e: Exception) {
+            null
+        }
+    }
     suspend fun updateProject(project: ProjectEntity) {
         collection.document(project.id).set(project).await()  // no .toString()
     }
@@ -2594,7 +2888,7 @@ package com.mamo15.ardab.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
-import com.mamo15.ardab.data.entity.TransactionEntity   // correct import
+import com.mamo15.ardab.data.entity.TransactionEntity
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -2650,7 +2944,31 @@ class TransactionRepository(private val firestore: FirebaseFirestore) {
         collection.document(transaction.id).delete().await()
     }
 
-    // Aggregated balances
+    // Per‑project balances
+    suspend fun getCashBalanceForProject(projectId: String): Double =
+        collection.whereEqualTo("projectId", projectId)
+            .whereEqualTo("paymentMethod", "CASH")
+            .get().await()
+            .documents.sumOf { it.getDouble("amount") ?: 0.0 }
+
+    suspend fun getBankBalanceForProject(projectId: String): Double =
+        collection.whereEqualTo("projectId", projectId)
+            .whereEqualTo("paymentMethod", "BANK")
+            .get().await()
+            .documents.sumOf { it.getDouble("amount") ?: 0.0 }
+
+    suspend fun getLoanBalanceForProject(projectId: String): Double {
+        val snapshot = collection.whereEqualTo("projectId", projectId)
+            .whereIn("type", listOf("LOAN", "LOAN_REPAYMENT"))
+            .get().await()
+        return snapshot.documents.sumOf { doc ->
+            val amount = doc.getDouble("amount") ?: 0.0
+            val type = doc.getString("type")
+            if (type == "LOAN") amount else -amount
+        }
+    }
+
+    // Total (all projects) balances
     suspend fun getTotalCashBalance(): Double =
         collection.whereEqualTo("paymentMethod", "CASH").get().await()
             .documents.sumOf { it.getDouble("amount") ?: 0.0 }
@@ -2658,6 +2976,15 @@ class TransactionRepository(private val firestore: FirebaseFirestore) {
     suspend fun getTotalBankBalance(): Double =
         collection.whereEqualTo("paymentMethod", "BANK").get().await()
             .documents.sumOf { it.getDouble("amount") ?: 0.0 }
+
+    suspend fun getTotalLoanBalance(): Double {
+        val snapshot = collection.whereIn("type", listOf("LOAN", "LOAN_REPAYMENT")).get().await()
+        return snapshot.documents.sumOf { doc ->
+            val amount = doc.getDouble("amount") ?: 0.0
+            val type = doc.getString("type")
+            if (type == "LOAN") amount else -amount
+        }
+    }
 }
 ============================================================
 FILE: ./app/src/main/java/com/mamo15/ardab/data/Models.kt
@@ -2749,7 +3076,7 @@ android {
         minSdk = 23
         targetSdk = 34
         versionCode = 1
-        versionName = "1.4"
+        versionName = "1.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

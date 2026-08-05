@@ -68,6 +68,7 @@
     <string name="created_at">Создан: %s</string>
     <string name="cash_label">Наличные: $%.2f</string>
     <string name="bank_label">Банк: $%.2f</string>
+    <string name="loan_label">Loans: $%.2f</string>
 
     <!-- Reports Screen -->
     <string name="reports_title">Отчеты</string>
@@ -81,5 +82,10 @@
     <string name="filter">Фильтр</string>
 
     <string name="chat_detail">Chat Details</string>
+
+    <!-- Project Details Screen -->
+    <string name="project_details">Project Details</string>
+    <string name="no_transactions_yet">لا يوجد عمليات مالية</string>
+
 
 </resources>

@@ -1,5 +1,6 @@
 package com.mamo15.ardab.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,15 +37,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.mamo15.ardab.R
 import com.mamo15.ardab.viewmodel.DashboardViewModel
 import com.mamo15.ardab.viewmodel.DashboardViewModelFactory
 import kotlinx.coroutines.launch
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
+    navController: NavController,
     viewModel: DashboardViewModel = viewModel(
         factory = DashboardViewModelFactory(LocalContext.current)
     )
@@ -53,7 +55,6 @@ fun DashboardScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var newProjectName by remember { mutableStateOf("") }
 
-    // Collect state from ViewModel
     val projects by viewModel.projects.collectAsState()
     val summary by viewModel.dashboardSummary.collectAsState()
 
@@ -77,7 +78,6 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Total Balance Card
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
@@ -91,6 +91,7 @@ fun DashboardScreen(
                     ) {
                         Text(text = stringResource(R.string.cash_label, summary.totalCash))
                         Text(text = stringResource(R.string.bank_label, summary.totalBank))
+                        Text(text = stringResource(R.string.loan_label, summary.totalLoan))
                     }
                 }
             }
@@ -117,10 +118,14 @@ fun DashboardScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(projects) { project ->
-                        Card(modifier = Modifier.fillMaxWidth()) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { navController.navigate("project/${project.id}") }
+                        ) {
                             Column(modifier = Modifier.padding(12.dp)) {
                                 Text(
-                                    text = project.name,  // now resolved correctly
+                                    text = project.name,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
@@ -131,7 +136,6 @@ fun DashboardScreen(
         }
     }
 
-    // Add Project Dialog (unchanged)
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false },

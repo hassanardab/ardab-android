@@ -9,12 +9,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 // Imports for screen destinations
 import com.mamo15.ardab.ui.navigation.Screen
 import com.mamo15.ardab.ui.screens.DashboardScreen
 import com.mamo15.ardab.ui.screens.MessagesScreen
 import com.mamo15.ardab.ui.screens.ProfileScreen
+import com.mamo15.ardab.ui.screens.ProjectDetailsScreen
 import com.mamo15.ardab.ui.screens.ReportsScreen // Fixed unresolved reference
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,7 +71,7 @@ fun MainScreen() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Dashboard.route) {
-                DashboardScreen()
+                DashboardScreen(navController = navController)
             }
             composable(Screen.Reports.route) {
                 ReportsScreen()
@@ -76,8 +79,19 @@ fun MainScreen() {
             composable(Screen.Messages.route) {
                 MessagesScreen()
             }
+
             composable(Screen.Profile.route) {
                 ProfileScreen()
+            }
+            composable(
+                route = "project/{projectId}",
+                arguments = listOf(navArgument("projectId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val projectId = backStackEntry.arguments?.getString("projectId") ?: ""
+                ProjectDetailsScreen(
+                    projectId = projectId,
+                    navController = navController
+                )
             }
         }
     }

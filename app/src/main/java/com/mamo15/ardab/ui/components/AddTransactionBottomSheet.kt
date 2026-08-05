@@ -18,7 +18,6 @@ import com.mamo15.ardab.R
 import com.mamo15.ardab.data.PaymentMethod
 import com.mamo15.ardab.data.TransactionType
 import com.mamo15.ardab.data.entity.TransactionEntity
-import com.mamo15.ardab.viewmodel.DashboardViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -27,8 +26,8 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionBottomSheet(
-    projectId: String,                     // Firestore document ID (String)
-    viewModel: DashboardViewModel,         // ViewModel to save the transaction
+    projectId: String,
+    onSave: (TransactionEntity) -> Unit,   // callback instead of ViewModel
     onDismiss: () -> Unit
 ) {
     var selectedType by remember { mutableStateOf(TransactionType.INCOME) }
@@ -203,14 +202,13 @@ fun AddTransactionBottomSheet(
                     onClick = {
                         val parsedAmount = amount.toDoubleOrNull() ?: 0.0
                         if (parsedAmount > 0) {
-                            // Convert date string to milliseconds (UTC)
                             val dateMillis = LocalDate.parse(date)
                                 .atStartOfDay()
                                 .toInstant(ZoneOffset.UTC)
                                 .toEpochMilli()
 
-                            val transactionEntity = TransactionEntity(
-                                projectId = projectId,  // String ID
+                            val transaction = TransactionEntity(
+                                projectId = projectId,
                                 amount = parsedAmount,
                                 type = selectedType,
                                 paymentMethod = selectedMethod,
@@ -218,7 +216,7 @@ fun AddTransactionBottomSheet(
                                 date = dateMillis
                             )
                             coroutineScope.launch {
-                                viewModel.addTransaction(transactionEntity)
+                                onSave(transaction)
                                 onDismiss()
                             }
                         }
@@ -260,7 +258,7 @@ fun AddTransactionBottomSheet(
     }
 }
 
-// Helpers for display names
+// Helpers for display names (same as before)
 fun TransactionType.getDisplayNameRes(): Int = when (this) {
     TransactionType.INCOME -> R.string.transaction_type_income
     TransactionType.EXPENSE -> R.string.transaction_type_expense

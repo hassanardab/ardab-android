@@ -3,13 +3,17 @@ rm -f codebase.txt && ( tree -I '.git|.idea|.gradle|android|ios|assets|documents
 
 ## Todos
 [x] projects, transactions work using local storage.
-[] push the code into github
+[x] push the code into github
 
-[] we can add project, transactions balance correct
+[x] we can add project
+[x] transactions 
+    - project card will takes us to the project details page then on it there will be transactions list and add button to AddTransactionBottomSheet.kt
+[] balance correct
 
-[] we have loans as well 
-[] add the transactions 
+[x] we have loans as well 
+[x] add the transactions 
 [] calculation are correct 
+
 
 [] fix the message UI 
 [] generate pdf reports 
